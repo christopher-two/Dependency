@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050505;
+  --color-surface: #111111;
+  --color-secondary: #A1A1AA;
+
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-white font-sans antialiased selection:bg-white selection:text-black;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
