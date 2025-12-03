@@ -1,14 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Copy, Check, Package, Layers, CheckSquare, Square, Trash2 } from 'lucide-react';
+import { Search, Copy, Check, Package, Layers, CheckSquare, Square, Trash2, AlertCircle } from 'lucide-react';
 import { type MatrixData, type Artifact } from './types';
-import { MOCK_DATA } from './data/mock';
 import { SkeletonLoader } from './components/SkeletonLoader';
 import { EmptyState } from './components/EmptyState';
 import { TopBar } from './components/TopBar';
 
+const DATA_URL = "https://vluoppbaehfmhkebyygv.supabase.co/storage/v1/object/sign/docs/Dependencies.json?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV84OTUzOTBiNi0zZDUxLTQ4MGMtOWJjNC03NzE4ZmNhOWVkNjkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJkb2NzL0RlcGVuZGVuY2llcy5qc29uIiwiaWF0IjoxNzY0NzkwMzQ2LCJleHAiOjE3OTYzMjYzNDZ9.u226ZXmC8peAJvpuGf6V98DPFWim3EYwPwZkvykv2qY";
+
 function App() {
   const [data, setData] = useState<MatrixData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
@@ -16,11 +18,20 @@ function App() {
   const [previewMode, setPreviewMode] = useState<'toml' | 'gradle'>('toml');
 
   useEffect(() => {
-    // Simulate fetch
     const fetchData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5s delay
-      setData(MOCK_DATA);
-      setLoading(false);
+      try {
+        const response = await fetch(DATA_URL);
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const jsonData = await response.json();
+        setData(jsonData);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load dependency data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
@@ -259,6 +270,22 @@ function App() {
     return (
       <div className="min-h-screen bg-background text-white flex items-center justify-center">
         <SkeletonLoader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background text-white flex flex-col items-center justify-center p-4">
+        <AlertCircle size={48} className="text-red-400 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Error Loading Data</h2>
+        <p className="text-secondary text-center max-w-md">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 px-4 py-2 bg-white text-black rounded font-medium hover:bg-white/90 transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
